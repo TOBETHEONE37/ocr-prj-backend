@@ -11,16 +11,16 @@ reader = easyocr.Reader(['ko', 'ch_sim'], gpu=False)
 
 @app.route('/')
 def home():
-    return jsonify({"status": "API is running!"})
+    return jsonify({"status": "Railway OCR API Running!"})
 
 @app.route('/upload', methods=['POST'])
 def upload_and_process():
     if 'image' not in request.files:
-        return jsonify({'error': '이미지가 필요합니다.'}), 400
+        return jsonify({'error': 'No image provided.'}), 400
     
     file = request.files['image']
     if file.filename == '':
-        return jsonify({'error': '파일을 찾을 수 없습니다.'}), 400
+        return jsonify({'error': 'Empty filename.'}), 400
 
     with tempfile.NamedTemporaryFile(delete=True, suffix='.png') as temp_img:
         file.save(temp_img.name)
