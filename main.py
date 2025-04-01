@@ -53,10 +53,10 @@ def ocr_and_translate():
             print("GPT 요청 텍스트:", raw_text)
 
             gpt_response = openai.ChatCompletion.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "다음 한의학 한자 문장을 한글로 번역해줘."},
-                    {"role": "user", "content": raw_text}
+                    {"role": "system", "content": "당신은 전통 한의학 고서를 번역하는 전문가입니다. 정확하고 자연스럽게 번역하세요."},
+                    {"role": "user", "content": f"다음 문장을 한글로 번역해줘:\n{raw_text}"}
                 ],
                 temperature=0.7
             )
