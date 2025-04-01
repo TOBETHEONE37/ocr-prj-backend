@@ -4,10 +4,10 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import easyocr
 import openai
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
 # 환경변수 불러오기
-load_dotenv()
+#load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__)
