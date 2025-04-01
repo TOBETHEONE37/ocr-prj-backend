@@ -13,9 +13,6 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 app = Flask(__name__)
 CORS(app)
 
-# EasyOCR에서 한자만 인식 (고서 → 번체 한자: ch_tra)
-#reader = easyocr.Reader(['ch_tra'], gpu=False)
-
 def translate_with_gpt(text: str) -> str:
     """GPT를 이용한 한자 → 한글 번역"""
     try:
@@ -38,22 +35,37 @@ def index():
 @app.route('/upload', methods=['POST'])
 def ocr_and_translate():
     if 'image' not in request.files:
-        return jsonify({'error': '이미지 파일이 필요합니다.'}), 400
+        return jsonify({'error': 'Image is required.'}), 400
 
     file = request.files['image']
     if file.filename == '':
-        return jsonify({'error': '파일 이름이 없습니다.'}), 400
+        return jsonify({'error': 'No filename provided.'}), 400
 
-    reader = easyocr.Reader(['ch_tra'], gpu=False)
+    try:
+        # OCR 모델 로딩 (lazy loading)
+        reader = easyocr.Reader(['ch_tra'], gpu=False)
 
-    with tempfile.NamedTemporaryFile(delete=True, suffix=".png") as tmp:
-        file.save(tmp.name)
-        try:
-            ocr_result = reader.readtext(tmp.name, detail=0, paragraph=True)
-            raw_text = '\n'.join(ocr_result)
+        with tempfile.NamedTemporaryFile(delete=True, suffix=".png") as tmp:
+            file.save(tmp.name)
+            result = reader.readtext(tmp.name, detail=0, paragraph=True)
+            raw_text = '\n'.join(result)
 
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            gpt_response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "다음 한의학 한자 문장을 한글로 번역해줘."},
+                    {"role": "user", "content": raw_text}
+                ],
+                temperature=0.7
+            )
+
+            translated = gpt_response['choices'][0]['message']['content'].strip()
+
+            return jsonify({'original': raw_text, 'translated': translated})
+
+    except Exception as e:        
+        return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 8000))
