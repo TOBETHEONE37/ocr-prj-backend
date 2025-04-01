@@ -14,7 +14,7 @@ app = Flask(__name__)
 CORS(app)
 
 # EasyOCR에서 한자만 인식 (고서 → 번체 한자: ch_tra)
-reader = easyocr.Reader(['ch_tra'], gpu=False)
+#reader = easyocr.Reader(['ch_tra'], gpu=False)
 
 def translate_with_gpt(text: str) -> str:
     """GPT를 이용한 한자 → 한글 번역"""
@@ -39,22 +39,18 @@ def index():
 def ocr_and_translate():
     if 'image' not in request.files:
         return jsonify({'error': '이미지 파일이 필요합니다.'}), 400
-    
+
     file = request.files['image']
     if file.filename == '':
-        return jsonify({'error': '파일이 비어 있습니다.'}), 400
+        return jsonify({'error': '파일 이름이 없습니다.'}), 400
+
+    reader = easyocr.Reader(['ch_tra'], gpu=False)
 
     with tempfile.NamedTemporaryFile(delete=True, suffix=".png") as tmp:
         file.save(tmp.name)
         try:
             ocr_result = reader.readtext(tmp.name, detail=0, paragraph=True)
             raw_text = '\n'.join(ocr_result)
-            translated_text = translate_with_gpt(raw_text)
-
-            return jsonify({
-                'original_text': raw_text,
-                'translated_text': translated_text
-            })
 
         except Exception as e:
             return jsonify({'error': str(e)}), 500
