@@ -56,5 +56,5 @@ def ocr_and_translate():
             return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.getenv("PORT", 8080))
+    port = int(os.getenv("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
