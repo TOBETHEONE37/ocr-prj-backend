@@ -50,6 +50,8 @@ def ocr_and_translate():
             result = reader.readtext(tmp.name, detail=0, paragraph=True)
             raw_text = '\n'.join(result)
 
+            print("GPT 요청 텍스트:", raw_text)
+
             gpt_response = openai.ChatCompletion.create(
                 model="gpt-4",
                 messages=[
@@ -60,6 +62,8 @@ def ocr_and_translate():
             )
 
             translated = gpt_response['choices'][0]['message']['content'].strip()
+
+            print("GPT 응답:", translated)
 
             return jsonify({'original': raw_text, 'translated': translated})
 
